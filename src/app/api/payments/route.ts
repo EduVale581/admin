@@ -7,18 +7,6 @@ type CreatePaymentBody = {
 
 export async function POST(req: Request) {
   const body = (await req.json()) as Partial<CreatePaymentBody>;
-
-  if (!body.serviceId || typeof body.serviceId !== "string") {
-    return Response.json({ error: "serviceId es requerido" }, { status: 400 });
-  }
-
-  if (typeof body.amount !== "number" || body.amount <= 0) {
-    return Response.json(
-      { error: "amount debe ser mayor que 0" },
-      { status: 400 },
-    );
-  }
-
   const commissionAmount = body.amount * 0.1;
 
   const paymentResult = await query<{
