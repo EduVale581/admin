@@ -1,15 +1,67 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { api } from "@/lib/api";
-import Table from "@/components/Table";
+import { useState } from "react";
+import styles from "./page.providers.module.css";
+type Company = {
+  id: string;
+  name: string;
+  status: "pending" | "approved" | "rejected";
+  createdAt: string;
+};
 
-export default function ProvidersPage() {
-  const [data, setData] = useState<unknown[]>([]);
+export default function RequestTable() {
+  const [requests, setRequests] = useState<Company[]>([
+    { id: "1", name: "Solicitud 1", status: "pending", createdAt: "2023-01-01" },
+    { id: "2", name: "Solicitud 2", status: "pending", createdAt: "2023-01-02" }
+  ]);
 
-  useEffect(() => {
-    api.get("/api/providers").then(setData);
-  }, []);
+  const handleAccept = (id: string) => {
+    setRequests(prev =>
+      prev.map(req =>
+        req.id === id ? { ...req, status: "approved" } : req
+      )
+    );
+  };
 
-  return <Table data={data} />;
+  const handleReject = (id: string) => {
+    setRequests(prev =>
+      prev.map(req =>
+        req.id === id ? { ...req, status: "rejected" } : req
+      )
+    );
+  };
+
+  return (
+  <div className={styles.container}>
+    <table className={styles.table}>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Nombre</th>
+          <th>Estado</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {requests.map(req => (
+          <tr key={req.id}>
+            <td>{req.id}</td>
+            <td>{req.name}</td>
+            <td>{req.status}</td>
+            <td>
+              <button className={`${styles.btn} ${styles["btn-accept"]}`} onClick={() => handleAccept(req.id)} disabled={req.status !== "pending"}>
+                Aceptar
+              </button>
+
+              <button className={`${styles.btn} ${styles["btn-reject"]}`} onClick={() => handleReject(req.id)} disabled={req.status !== "pending"}>
+                Rechazar
+              </button>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+  );
 }
