@@ -14,3 +14,11 @@ export type Commission = {
   paymentId: string;
   amount: number;
 };
+
+export type ProviderPayment = {
+  id: string;
+  paymentId: string;
+  providerName: string;
+  amount: number;
+  status: "pending" | "paid";
+};
