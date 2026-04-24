@@ -22,3 +22,11 @@ export type ProviderPayment = {
   amount: number;
   status: "pending" | "paid";
 };
+
+export type Service = {
+  id: string;
+  companyId: string;
+  name: string;
+  status: "active" | "completed";
+  price: number;
+};
