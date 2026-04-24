@@ -1,71 +1,82 @@
-import { NextResponse } from "next/server";
 
+import { NextRequest, NextResponse } from "next/server";
 import { query } from "@/lib/db";
+import { Service } from "@/lib/types";
 
-export async function POST(req: Request) {
+export async function GET() {
   try {
-    const body = await req.json();
+    console.log("GET /api/services - Fetching all services");
+    const result = await query<{
+      id: string;
+      company_id: string;
+      name: string;
+      price: number;
+      status: string;
+    }>("SELECT id, company_id, name, price, status FROM services ORDER BY id DESC");
 
-    const { name, description, price, companyId } = body;
+    const services: Service[] = result.rows.map((row) => ({
+      id: String(row.id),
+      companyId: row.company_id,
+      name: row.name,
+      price: row.price,
+      status: (row.status as "active" | "completed") || "active",
+    }));
 
-    // Validar campos obligatorios
-    if (!name || !price || !companyId) {
+    console.log(`Retrieved ${services.length} services from database`);
+    return NextResponse.json(services);
+  } catch (error) {
+    console.error("GET /api/services error:", error);
+    return NextResponse.json(
+      { error: "Failed to fetch services" },
+      { status: 500 }
+    );
+  }
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.json();
+    console.log("POST /api/services - Creating new service with data:", body);
+
+    // Validate required fields
+    if (!body.companyId || !body.name || body.price === undefined) {
+      console.warn(
+        "POST /api/services - Validation failed: Missing required fields"
+      );
       return NextResponse.json(
-        { message: "Faltan campos obligatorios" },
+        { error: "Missing required fields: companyId, name, and price" },
         { status: 400 }
       );
     }
 
-    // Validar tipos de datos
-    if (typeof name !== "string") {
-      return NextResponse.json(
-        { message: "name debe ser texto" },
-        { status: 400 }
-      );
-    }
+    // Insert into database
+    const result = await query<{
+      id: string;
+      company_id: string;
+      name: string;
+      price: number;
+      status: string;
+    }>(
+      "INSERT INTO services (company_id, name, price, status) VALUES ($1, $2, $3, $4) RETURNING id, company_id, name, price, status",
+      [body.companyId, body.name, Number(body.price), body.status || "active"]
+    );
 
-    if (typeof price !== "number") {
-      return NextResponse.json(
-        { message: "price debe ser número" },
-        { status: 400 }
-      );
-    }
-
-    if (typeof companyId !== "string") {
-      return NextResponse.json(
-        { message: "companyId inválido" },
-        { status: 400 }
-      );
-    }
-
-    // (SIMULACION) validar empresa
-    // Aquí debería ir la validación real con BD
-    // Por ahora lo dejamos simulado
-    const companyExists = true;
-
-    if (!companyExists) {
-      return NextResponse.json(
-        { message: "Empresa no encontrada" },
-        { status: 404 }
-      );
-    }
-
-    // 🔴 4. Crear servicio (simulado)
-    const newService = {
-      id: crypto.randomUUID(),
-      name,
-      description,
-      price,
-      companyId,
-      createdAt: new Date()
+    const dbRow = result.rows[0];
+    const newService: Service = {
+      id: String(dbRow.id),
+      companyId: dbRow.company_id,
+      name: dbRow.name,
+      price: dbRow.price,
+      status: (dbRow.status as "active" | "completed") || "active",
     };
 
-    // 🔴 5. Respuesta exitosa
-    return NextResponse.json(newService, { status: 201 });
+    console.log("POST /api/services - Service created successfully:", newService);
 
+    return NextResponse.json(newService, { status: 201 });
   } catch (error) {
+    console.error("POST /api/services error:", error);
     return NextResponse.json(
-      { message: "Error del servidor" },
+      { error: "Failed to create service" },
       { status: 500 }
     );
   }
