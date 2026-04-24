@@ -1,40 +1,66 @@
-.actions {
-  display: flex;
-  gap: 8px;
-}
-
+/* Contenedor */
 .container {
-  max-width: 700px;
-  margin: 40px auto;
-  padding: 20px;
-
-  background-color: #111;
-  border: 1px solid #ffffff30;
-
-  border-radius: 14px;
-
-  box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+  padding: 24px;
+  background-color: #000000;
+  min-height: 100vh;
+  font-family: Arial, Helvetica, sans-serif;
 }
 
-.btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
+/* Tabla */
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  background: rgb(255, 255, 255);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+.Text{
+  color: black;
+}
 
-  padding: 8px 14px;
+/* Header */
+.table thead {
+  background-color: #2b303c;
+  color: rgb(255, 255, 255);
+}
+
+.table th {
+  text-align: left;
+  padding: 14px;
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 600;
+}
 
+/* Celdas */
+.table td {
+  padding: 14px;
+  border-bottom: 1px solid #ffffff;
+  font-size: 14px;
+}
+
+/* Hover fila */
+.table tbody tr:hover {
+  background-color: #9d9d9d;
+  transition: 0.2s;
+}
+
+/* Botones base */
+.btn {
+  padding: 6px 12px;
+  margin-right: 8px;
   border-radius: 8px;
   border: none;
   cursor: pointer;
-
+  font-size: 13px;
+  font-weight: 500;
   transition: all 0.2s ease;
 }
 
+/* Aceptar */
 .btn-accept {
   background: linear-gradient(135deg, #22c55e, #16a34a);
-  color: #fff;
+  color: rgb(255, 255, 255);
   box-shadow: 0 2px 6px rgba(34, 197, 94, 0.3);
 }
 
@@ -43,13 +69,10 @@
   box-shadow: 0 4px 10px rgba(34, 197, 94, 0.4);
 }
 
-.btn-accept:active {
-  transform: scale(0.97);
-}
-
+/* Rechazar */
 .btn-reject {
   background: linear-gradient(135deg, #ef4444, #dc2626);
-  color: #fff;
+  color: white;
   box-shadow: 0 2px 6px rgba(239, 68, 68, 0.3);
 }
 
@@ -58,19 +81,32 @@
   box-shadow: 0 4px 10px rgba(239, 68, 68, 0.4);
 }
 
-.btn-reject:active {
-  transform: scale(0.97);
+/* Click */
+.btn:active {
+  transform: scale(0.96);
 }
 
-.btn:focus {
-  outline: none;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.4);
-}
-
+/* Disabled */
 .btn:disabled {
   background: #d1d5db;
-  color: #6b7280;
+  color: #556fa4;
   cursor: not-allowed;
   box-shadow: none;
   transform: none;
+}
+
+/* Estados */
+.approved {
+  color: #16a34a;
+  font-weight: 600;
+}
+
+.rejected {
+  color: #dc2626;
+  font-weight: 600;
+}
+
+.pending {
+  color: #ca8a04;
+  font-weight: 600;
 }
