@@ -18,7 +18,7 @@ export default function RequestsPage() {
   const fetchRequests = async () => {
     try {
       const result = await api.get("/api/requests");
-      setData(result.data || []);
+      setData(result.data.data || []);
     } catch (error) {
       console.error("Error fetching requests:", error);
     } finally {
