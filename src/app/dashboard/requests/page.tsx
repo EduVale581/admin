@@ -4,118 +4,141 @@ import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
 import Card from "@/components/Card";
 
-interface Company {
+type Company = {
   id: string;
-  nombre: string;
-  fecha: string;
-  estado: "pending" | "active" | "completed";
-}
+  name: string;
+  status: "pending" | "approved" | "rejected";
+  created_at: string;
+};
 
 export default function RequestsPage() {
   const [data, setData] = useState<Company[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+
+  const fetchRequests = async () => {
+    try {
+      const result = await api.get("/api/requests");
+      setData(result.data.data || []);
+    } catch (error) {
+      console.error("Error fetching requests:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        const result = await api.get("/api/requests");
-        if (Array.isArray(result)) {
-          setData(result);
-          setError(null);
-        }
-      } catch (err) {
-        console.error("Error fetching requests:", err);
-        setError("Error al cargar solicitudes");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
+    fetchRequests();
   }, []);
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "active":
-        return "#4caf50";
-      case "completed":
-        return "#2196f3";
-      case "pending":
-        return "#ff9800";
-      default:
-        return "#9e9e9e";
-    }
-  };
-
-  const getStatusLabel = (status: string) => {
-    switch (status) {
-      case "active":
-        return "Activo";
-      case "completed":
-        return "Completado";
-      case "pending":
-        return "Pendiente";
-      default:
-        return status;
-    }
-  };
-
-  const formatDate = (dateString: string) => {
+  const handleApprove = async (id: string) => {
     try {
-      return new Date(dateString).toLocaleDateString("es-MX", {
-        year: "numeric",
-        month: "2-digit",
-        day: "2-digit",
-      });
-    } catch {
-      return dateString;
+      await api.post("/api/requests", { id, action: "approve" });
+      await fetchRequests(); // Recargar datos
+    } catch (error) {
+      console.error("Error approving request:", error);
+      alert("Error al aprobar la solicitud");
     }
   };
+
+  const handleReject = async (id: string) => {
+    try {
+      await api.post("/api/requests", { id, action: "reject" });
+      await fetchRequests(); // Recargar datos
+    } catch (error) {
+      console.error("Error rejecting request:", error);
+      alert("Error al rechazar la solicitud");
+    }
+  };
+
+  if (loading) {
+    return (
+      <Card title="Solicitudes de Empresa">
+        <p>Cargando solicitudes...</p>
+      </Card>
+    );
+  }
 
   return (
     <Card title="Solicitudes de Empresa">
-      {loading && <p>Cargando...</p>}
-      {error && <p style={{ color: "red" }}>{error}</p>}
-      {!loading && data.length === 0 && <p>Sin datos disponibles</p>}
-      {!loading && data.length > 0 && (
-        <table
-          style={{
-            width: "100%",
-            borderCollapse: "collapse",
-            marginTop: "10px",
-          }}
-        >
+      {data.length === 0 ? (
+        <p>No hay solicitudes pendientes</p>
+      ) : (
+        <table border={1} cellPadding={8} style={{ width: "100%" }}>
           <thead>
-            <tr style={{ textAlign: "left", borderBottom: "2px solid #eee" }}>
-              <th style={{ padding: "10px" }}>Nombre</th>
-              <th style={{ padding: "10px" }}>Fecha</th>
-              <th style={{ padding: "10px" }}>Estado</th>
-              <th style={{ padding: "10px" }}>Acciones</th>
+            <tr>
+              <th>Nombre</th>
+              <th>Estado</th>
+              <th>Fecha de Creación</th>
+              <th>Acciones</th>
             </tr>
           </thead>
           <tbody>
             {data.map((company) => (
-              <tr key={company.id} style={{ borderBottom: "1px solid #eee" }}>
-                <td style={{ padding: "10px" }}>{company.nombre}</td>
-                <td style={{ padding: "10px" }}>{formatDate(company.fecha)}</td>
-                <td style={{ padding: "10px" }}>
+              <tr key={company.id}>
+                <td>{company.name}</td>
+                <td>
                   <span
                     style={{
-                      backgroundColor: getStatusColor(company.estado),
-                      color: "white",
                       padding: "4px 8px",
                       borderRadius: "4px",
-                      fontSize: "12px",
-                      fontWeight: "500",
+                      backgroundColor:
+                        company.status === "pending"
+                          ? "#fff3cd"
+                          : company.status === "approved"
+                          ? "#d1edff"
+                          : "#f8d7da",
+                      color:
+                        company.status === "pending"
+                          ? "#856404"
+                          : company.status === "approved"
+                          ? "#0c5460"
+                          : "#721c24",
                     }}
                   >
-                    {getStatusLabel(company.estado)}
+                    {company.status === "pending"
+                      ? "Pendiente"
+                      : company.status === "approved"
+                      ? "Aprobado"
+                      : "Rechazado"}
                   </span>
                 </td>
-                <td style={{ padding: "10px" }}>
-                  {/* Botones se agregarán aquí */}
+                <td>{new Date(company.created_at).toLocaleDateString()}</td>
+                <td>
+                  {company.status === "pending" && (
+                    <div style={{ display: "flex", gap: "8px" }}>
+                      <button
+                        onClick={() => handleApprove(company.id)}
+                        style={{
+                          backgroundColor: "#28a745",
+                          color: "white",
+                          border: "none",
+                          padding: "6px 12px",
+                          borderRadius: "4px",
+                          cursor: "pointer",
+                        }}
+                      >
+                        Aprobar
+                      </button>
+                      <button
+                        onClick={() => handleReject(company.id)}
+                        style={{
+                          backgroundColor: "#dc3545",
+                          color: "white",
+                          border: "none",
+                          padding: "6px 12px",
+                          borderRadius: "4px",
+                          cursor: "pointer",
+                        }}
+                      >
+                        Rechazar
+                      </button>
+                    </div>
+                  )}
+                  {company.status !== "pending" && (
+                    <span style={{ color: "#6c757d" }}>
+                      {company.status === "approved" ? "Aprobado" : "Rechazado"}
+                    </span>
+                  )}
                 </td>
               </tr>
             ))}
