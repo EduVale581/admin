@@ -1,27 +1,47 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { api } from "@/lib/api";
-import Table from "@/components/Table";
 
 export default function PaymentsPage() {
-  const [data, setData] = useState<unknown[]>([]);
+  const [serviceId, setServiceId] = useState("");
+  const [amount, setAmount] = useState("");
 
   const createPayment = async () => {
-    await api.post("/api/payments", {
-      amount: Math.floor(Math.random() * 1000),
-    });
-    location.reload();
-  };
+    if (!serviceId || !amount) {
+      alert("Completa serviceId y amount");
+      return;
+    }
 
-  useEffect(() => {
-    api.get("/api/payments").then(setData);
-  }, []);
+    await api.post("/api/payments", {
+      serviceId,
+      amount: Number(amount),
+    });
+
+    setServiceId("");
+    setAmount("");
+    alert("Pago enviado");
+  };
 
   return (
     <div>
+      <h1>Pagos</h1>
+
+      <input
+        type="text"
+        placeholder="Service ID"
+        value={serviceId}
+        onChange={(e) => setServiceId(e.target.value)}
+      />
+
+      <input
+        type="number"
+        placeholder="Monto"
+        value={amount}
+        onChange={(e) => setAmount(e.target.value)}
+      />
+
       <button onClick={createPayment}>Crear pago</button>
-      <Table data={data} />
     </div>
   );
 }
