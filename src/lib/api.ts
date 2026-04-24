@@ -1,6 +1,7 @@
 export const api = {
   get: async (url: string) => {
     const res = await fetch(url);
+    if (!res.ok) throw new Error(`GET ${url} failed`);
     return res.json();
   },
 
@@ -12,6 +13,8 @@ export const api = {
       },
       body: JSON.stringify(body),
     });
+
+    if (!res.ok) throw new Error(`POST ${url} failed`);
     return res.json();
   },
 };
